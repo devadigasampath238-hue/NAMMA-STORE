@@ -11,3 +11,10 @@ frontend/.env.local
 
 # OS
 .DS_Store
+backend/.env
+frontend/.env.local
+.env
+.env.*
+!.env.example
+serviceAccount.json
+firebase-adminsdk-*.json
