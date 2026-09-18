@@ -1,0 +1,317 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Kannada:wght@500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================================
+   NAMMA STORE DESIGN SYSTEM
+   -----------------------------------------------------------
+   Warm sandalwood / turmeric / Karnataka-red palette. Deliberately
+   NOT a marketplace blue-and-yellow: the usability patterns are
+   familiar, the branding is our own.
+   =========================================================== */
+
+:root {
+  --font-kannada: "Noto Sans Kannada", sans-serif;
+
+  --ns-page: #fffdf8;       /* warm cream, not flat white */
+  --ns-surface: #ffffff;
+  --ns-ink: #2b1a12;
+  --ns-ink-soft: #6b5546;
+  --ns-line: #f0e2d2;
+
+  --ns-radius: 0.875rem;
+  --ns-radius-lg: 1.25rem;
+
+  /* One knob for the watermark so it can be tuned in one place.
+     0.035 was effectively invisible - the page just read as blank white.
+     0.10 with multiply blending keeps body text at well over the 4.5:1
+     contrast ratio while the logo is actually perceptible. */
+  --ns-watermark-size: 680px;
+  --ns-watermark-opacity: 0.1;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  /* Nothing may push the page sideways on small screens. */
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--ns-ink);
+  background-color: var(--ns-page);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* -----------------------------------------------------------
+   LOGO WATERMARK
+   -----------------------------------------------------------
+   The opacity lives on this pseudo-element ONLY - never on body
+   or on any content wrapper - so text stays at full contrast.
+
+   `mix-blend-mode: multiply` matters here: the asset is a JPEG
+   with a solid light background, and without blending you would
+   see a faint rectangle instead of just the mark.
+
+   It is fixed and pointer-events:none, so it never scrolls
+   awkwardly and never swallows a click.
+   ----------------------------------------------------------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("/logo.jpeg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  /* `contain` inside a capped box: never cropped, never stretched. */
+  background-size: var(--ns-watermark-size) auto;
+  opacity: var(--ns-watermark-opacity);
+  mix-blend-mode: multiply;
+}
+
+/* Keep the watermark proportionate instead of dominating small screens. */
+@media (max-width: 1024px) {
+  :root { --ns-watermark-size: 460px; }
+}
+@media (max-width: 640px) {
+  /* Slightly lower on phones: content sits closer to the mark there,
+     so the same opacity would start competing with the text. */
+  :root { --ns-watermark-size: 300px; --ns-watermark-opacity: 0.075; }
+}
+
+/* Every real element sits above the watermark. */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-kannada {
+  font-family: var(--font-kannada);
+}
+
+/* Visible focus for keyboard users, invisible for mouse users. */
+:focus-visible {
+  outline: 2px solid #c2410c;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: #ffd68a;
+  color: #5c220d;
+}
+
+/* ===========================================================
+   COMPONENTS
+   =========================================================== */
+
+@layer components {
+  .ns-card {
+    @apply bg-white rounded-xl2 border border-brand-100 shadow-card transition-shadow duration-200;
+  }
+
+  .ns-card-hover {
+    @apply hover:shadow-cardHover hover:-translate-y-0.5 transition-all duration-200;
+  }
+
+  .ns-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-gradient-to-b from-brand-500 to-brand-700 text-white font-medium rounded-lg px-5 py-2.5 shadow-sm hover:from-brand-600 hover:to-brand-800 active:scale-[0.98] transition disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed;
+  }
+
+  .ns-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border border-brand-600 text-brand-700 font-medium rounded-lg px-5 py-2.5 hover:bg-brand-50 active:scale-[0.98] transition disabled:border-gray-200 disabled:text-gray-300 disabled:cursor-not-allowed;
+  }
+
+  .ns-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 text-brand-700 font-medium hover:text-brand-900 transition;
+  }
+
+  .ns-input {
+    @apply w-full border border-brand-100 bg-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 transition;
+  }
+
+  .ns-label {
+    @apply block text-sm font-medium text-brand-900 mb-1.5;
+  }
+
+  .ns-section-title {
+    @apply font-heading text-xl md:text-2xl font-semibold text-brand-900;
+  }
+
+  .ns-badge {
+    @apply inline-flex items-center text-xs font-medium rounded-full px-2.5 py-1;
+  }
+
+  /* Responsive product grid used by every listing surface. */
+  .ns-grid-products {
+    @apply grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4;
+  }
+
+  /* Translucent panel so the watermark stays faintly visible behind
+     large content blocks instead of being fully masked by solid white. */
+  .ns-panel {
+    @apply bg-white/85 backdrop-blur-[2px] rounded-xl2 border border-brand-100 shadow-card;
+  }
+}
+
+/* ===========================================================
+   ANIMATION
+   -----------------------------------------------------------
+   Plain CSS on purpose: framer-motion is not a dependency of this
+   project, and adding one for entrance fades would be a poor trade.
+   =========================================================== */
+
+@keyframes ns-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ns-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ns-scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ns-slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ns-heart-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ns-cart-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Success tick: the circle sweeps, then the check draws. */
+@keyframes ns-draw-circle {
+  from { stroke-dashoffset: 300; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes ns-draw-check {
+  from { stroke-dashoffset: 60; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes ns-confetti-fall {
+  0%   { opacity: 1; transform: translateY(-10px) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(260px) rotate(540deg); }
+}
+
+@keyframes ns-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes ns-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ns-animate-fade-up   { animation: ns-fade-up 0.4s ease-out both; }
+.ns-animate-fade-in   { animation: ns-fade-in 0.3s ease-out both; }
+.ns-animate-scale-in  { animation: ns-scale-in 0.22s ease-out both; }
+.ns-animate-slide-in  { animation: ns-slide-in-right 0.28s ease-out both; }
+.ns-animate-heart     { animation: ns-heart-pop 0.4s ease-out; }
+.ns-animate-cart-bump { animation: ns-cart-bump 0.35s ease-out; }
+.ns-animate-spin      { animation: ns-spin 0.8s linear infinite; }
+
+/* Staggered entrance for grids - cheap, and caps out so a 60-item
+   grid does not leave the last card waiting three seconds. */
+.ns-stagger > *        { animation: ns-fade-up 0.4s ease-out both; }
+.ns-stagger > *:nth-child(1) { animation-delay: 0.00s; }
+.ns-stagger > *:nth-child(2) { animation-delay: 0.04s; }
+.ns-stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.ns-stagger > *:nth-child(4) { animation-delay: 0.12s; }
+.ns-stagger > *:nth-child(5) { animation-delay: 0.16s; }
+.ns-stagger > *:nth-child(6) { animation-delay: 0.20s; }
+.ns-stagger > *:nth-child(7) { animation-delay: 0.24s; }
+.ns-stagger > *:nth-child(n+8) { animation-delay: 0.28s; }
+
+.ns-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #f6ead9;
+}
+
+.ns-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: ns-shimmer 1.4s infinite;
+}
+
+.ns-success-circle {
+  stroke-dasharray: 300;
+  animation: ns-draw-circle 0.6s ease-out forwards;
+}
+
+.ns-success-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: ns-draw-check 0.35s 0.5s ease-out forwards;
+}
+
+.ns-confetti-piece {
+  animation: ns-confetti-fall 1.6s ease-in forwards;
+}
+
+/* Hide the scrollbar on horizontal strips (thumbnails, chips) while
+   keeping them scrollable and keyboard accessible. */
+.ns-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ns-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===========================================================
+   REDUCED MOTION
+   -----------------------------------------------------------
+   Honour the OS setting: content still appears, it just does not
+   move. Note `animation-iteration-count: 1` rather than `none`,
+   so draw-on animations still end in their final state.
+   =========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ns-card-hover:hover {
+    transform: none;
+  }
+}
+
+@media print {
+  body::before { display: none; }
+}
